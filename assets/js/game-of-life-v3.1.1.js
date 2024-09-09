@@ -484,7 +484,7 @@
                 random: function () {
                     GOL.handlers.buttons.clear()
                     let binaryData = '';
-                    for (let i = 0; i < 81; i++) {
+                    for (let i = 0; i < 144; i++) {
                         binaryData += Math.random() < 0.5 ? '0' : '1';
                     }
                     localStorage.setItem('matrix', binaryData)
@@ -1232,8 +1232,8 @@ function getLitCoordinates(binaryStr) {
 
     for (let i = 0; i < binaryStr.length; i++) {
         if (binaryStr[i] === '1') {
-            const x = i % 9; // 列号
-            const y = Math.floor(i / 9); // 行号
+            const x = i % 12; // 列号
+            const y = Math.floor(i / 12); // 行号
             coordinates.push([x, y]);
         }
     }
