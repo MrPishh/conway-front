@@ -21,6 +21,8 @@
         document.body.appendChild(stats.domElement);
     });
 
+    var gpu = new GPU(); // Initialize GPU.js
+    
     var GOL = {
 
         columns: 0,
@@ -313,7 +315,7 @@
 
             algorithmTime = (new Date());
 
-            liveCellNumber = GOL.listLife.nextGeneration();
+            liveCellNumber = GOL.listLife.nextGenerationGPU();
 
             algorithmTime = (new Date()) - algorithmTime;
 
