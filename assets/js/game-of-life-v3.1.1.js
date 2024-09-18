@@ -264,6 +264,11 @@
             this.element.livecells.innerHTML = '0';
             this.element.steptime.innerHTML = '0 / 0 (0 / 0)';
 
+            // Initialize matrix if not already done
+            if (!this.matrix) {
+                this.matrix = new Array(this.rows).fill(0).map(() => new Array(this.columns).fill(0));
+            }
+
             this.canvas.clearWorld(); // Reset GUI
             this.canvas.drawWorld(); // Draw State
 
@@ -359,11 +364,6 @@
             liveCellNumber = this.nextGenerationGPU();
 
             algorithmTime = (new Date()) - algorithmTime;
-
-            // Initialize matrix if not already done
-            if (!this.matrix) {
-                this.matrix = new Array(this.rows).fill(0).map(() => new Array(this.columns).fill(0));
-            }
 
             // Canvas run
 
