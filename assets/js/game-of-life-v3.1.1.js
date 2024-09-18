@@ -839,7 +839,46 @@
              }
              }
              */
-            nextGeneration: function () {
+            
+    nextGenerationGPU: function () {
+        const kernel = gpu.createKernel(function (matrix) {
+            const rows = this.constants.rows;
+            const cols = this.constants.cols;
+            
+            const getNeighborCount = (x, y) => {
+                let count = 0;
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        if (!(i === 0 && j === 0)) {
+                            const newRow = (x + i + rows) % rows;
+                            const newCol = (y + j + cols) % cols;
+                            count += matrix[newRow][newCol];
+                        }
+                    }
+                }
+                return count;
+            };
+
+            const alive = matrix[this.thread.y][this.thread.x];
+            const neighbors = getNeighborCount(this.thread.y, this.thread.x);
+
+            // Apply the Game of Life rules
+            if (alive) {
+                return (neighbors === 2 || neighbors === 3) ? 1 : 0;
+            } else {
+                return (neighbors === 3) ? 1 : 0;
+            }
+        })
+        .setConstants({ rows: GOL.rows, cols: GOL.columns })
+        .setOutput([GOL.columns, GOL.rows]);
+
+        // Pass the matrix to the GPU kernel
+        const newMatrix = kernel(this.matrix);
+        this.matrix = newMatrix;  // Update the matrix with the GPU-computed result
+    },
+
+    nextGeneration: function () {
+    
                 var x, y, i, j, m, n, key, t1, t2, alive = 0, neighbours, deadNeighbours, allDeadNeighbours = {},
                     newState = [];
                 this.redrawList = [];
