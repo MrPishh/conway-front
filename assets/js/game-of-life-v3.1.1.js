@@ -841,7 +841,9 @@
              }
              }
              */
-            
+        /**
+         * Use GPU.js to calculate the next generation
+         */
     nextGenerationGPU: function () {
         const kernel = gpu.createKernel(function (matrix) {
             const rows = this.constants.rows;
