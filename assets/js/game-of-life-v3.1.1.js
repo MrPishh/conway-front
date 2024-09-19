@@ -734,6 +734,36 @@
                 this.cellSpace = 1;
             },
 
+            function countLiveNeighbors(x, y) {
+  const rowStart = y * GOL.columns;
+  const rowEnd = rowStart + GOL.columns;
+  let count = 0;
+
+  for (let i = rowStart; i < rowEnd; i++) {
+    const cell = GOL.actualState[i];
+    if (cell) {
+      const cellIndex = cell.indexOf(x);
+      if (cellIndex !== -1) {
+        // Remove the cell from the count
+        cell.splice(cellIndex, 1);
+        continue;
+      }
+    }
+
+    // Check the 8 neighboring cells
+    const left = x > 0 ? GOL.actualState[i][cellIndex - 1] : null;
+    const right = x < GOL.columns - 1 ? GOL.actualState[i][cellIndex + 1] : null;
+    const top = y > 0 ? GOL.actualState[i - 1] : null;
+    const bottom = y < GOL.rows - 1 ? GOL.actualState[i + 1] : null;
+
+    if (left && left[cellIndex - 1]) count++;
+    if (right && right[cellIndex + 1]) count++;
+    if (top && top[cellIndex - GOL.columns]) count++;
+    if (bottom && bottom[cellIndex + GOL.columns]) count++;
+  }
+
+  return count;
+}
 
             /**
              * drawCell
