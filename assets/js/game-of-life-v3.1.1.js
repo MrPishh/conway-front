@@ -734,6 +734,9 @@
                 this.cellSpace = 1;
             },
 
+            /**
+             * LiveNeighbours
+             */
             function countLiveNeighbors(x, y) {
   const rowStart = y * GOL.columns;
   const rowEnd = rowStart + GOL.columns;
