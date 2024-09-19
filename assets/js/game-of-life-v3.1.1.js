@@ -21,8 +21,6 @@
         document.body.appendChild(stats.domElement);
     });
 
-    var gpu = new GPU(); // Initialize GPU.js
-    
     var GOL = {
 
         columns: 0,
@@ -264,15 +262,8 @@
             this.element.livecells.innerHTML = '0';
             this.element.steptime.innerHTML = '0 / 0 (0 / 0)';
 
-            // Initialize matrix if not already done
-            if (!this.matrix) {
-                this.matrix = new Array(this.rows).fill(0).map(() => new Array(this.columns).fill(0));
-            }
-
             this.canvas.clearWorld(); // Reset GUI
             this.canvas.drawWorld(); // Draw State
-
-            this.nextGenerationGPU();  // Use GPU.js for calculation
 
             if (this.autoplay) { // Next Flow
                 this.autoplay = false;
@@ -311,45 +302,6 @@
             // this.helpers.registerEvent(document.getElementById('buttonExport'), 'click', this.handlers.buttons.export_, false);
         },
 
-        /**
-         * Use GPU.js to calculate the next generation
-         */
-    nextGenerationGPU: function () {
-        const kernel = gpu.createKernel(function (matrix) {
-            const rows = this.constants.rows;
-            const cols = this.constants.cols;
-            
-            const getNeighborCount = (x, y) => {
-                let count = 0;
-                for (let i = -1; i <= 1; i++) {
-                    for (let j = -1; j <= 1; j++) {
-                        if (!(i === 0 && j === 0)) {
-                            const newRow = (x + i + rows) % rows;
-                            const newCol = (y + j + cols) % cols;
-                            count += matrix[newRow][newCol];
-                        }
-                    }
-                }
-                return count;
-            };
-
-            const alive = matrix[this.thread.y][this.thread.x];
-            const neighbors = getNeighborCount(this.thread.y, this.thread.x);
-
-            // Apply the Game of Life rules
-            if (alive) {
-                return (neighbors === 2 || neighbors === 3) ? 1 : 0;
-            } else {
-                return (neighbors === 3) ? 1 : 0;
-            }
-        })
-        .setConstants({ rows: GOL.rows, cols: GOL.columns })
-        .setOutput([GOL.columns, GOL.rows]);
-
-        // Pass the matrix to the GPU kernel
-        const newMatrix = kernel(this.matrix);
-        this.matrix = newMatrix;  // Update the matrix with the GPU-computed result
-    },
 
         /**
          * Run Next Step
@@ -361,9 +313,10 @@
 
             algorithmTime = (new Date());
 
-            liveCellNumber = this.nextGenerationGPU();
+            liveCellNumber = GOL.listLife.nextGeneration();
 
             algorithmTime = (new Date()) - algorithmTime;
+
 
             // Canvas run
 
@@ -845,34 +798,111 @@
          */
         listLife: {
 
-    actualState: [],
-    redrawList: [],
+            actualState: [],
+            redrawList: [],
 
-    init: function () {
-        this.actualState = [];
-    },
 
-    someFunction: function () {
-        // Process dead neighbours
-        for (var key in allDeadNeighbours) {
-            if (allDeadNeighbours.hasOwnProperty(key) && allDeadNeighbours[key] === 3) {
-                var splitKey = key.split(',');  // Use a temporary variable
-                t1 = parseInt(splitKey[0], 10); // Parse the key values safely
-                t2 = parseInt(splitKey[1], 10);
+            /**
+             *
+             */
+            init: function () {
+                this.actualState = [];
+            },
 
-                this.addCell(t1, t2, newState);
-                alive++;
-                this.redrawList.push([t1, t2, 1]);
-            }
-        }
-        this.actualState = newState;
-        return alive;
-    },
 
-    topPointer: 1,
-    middlePointer: 1,
-    bottomPointer: 1
-}
+            /**
+             *
+             NOTE: The following code is slower than the used one.
+
+             (...)
+
+             if (allDeadNeighbours[key] === undefined) {
+             allDeadNeighbours[key] = {
+             x: deadNeighbours[m][0],
+             y: deadNeighbours[m][1],
+             i: 1
+             };
+             } else {
+             allDeadNeighbours[key].i++;
+             }
+
+             (...)
+
+             // Process dead neighbours
+             for (key in allDeadNeighbours) {
+
+             if (allDeadNeighbours[key].i === 3) { // Add new Cell
+
+             this.addCell(allDeadNeighbours[key].x, allDeadNeighbours[key].y, newState);
+             alive++;
+             this.redrawList.push([allDeadNeighbours[key].x, allDeadNeighbours[key].y, 1]);
+             }
+             }
+             */
+            nextGeneration: function () {
+                var x, y, i, j, m, n, key, t1, t2, alive = 0, neighbours, deadNeighbours, allDeadNeighbours = {},
+                    newState = [];
+                this.redrawList = [];
+
+                for (i = 0; i < this.actualState.length; i++) {
+                    this.topPointer = 1;
+                    this.bottomPointer = 1;
+
+                    for (j = 1; j < this.actualState[i].length; j++) {
+                        x = this.actualState[i][j];
+                        y = this.actualState[i][0];
+
+                        // Possible dead neighbours
+                        deadNeighbours = [[x - 1, y - 1, 1], [x, y - 1, 1], [x + 1, y - 1, 1], [x - 1, y, 1], [x + 1, y, 1], [x - 1, y + 1, 1], [x, y + 1, 1], [x + 1, y + 1, 1]];
+
+                        // Get number of live neighbours and remove alive neighbours from deadNeighbours
+                        neighbours = this.getNeighboursFromAlive(x, y, i, deadNeighbours);
+
+                        // Join dead neighbours to check list
+                        for (m = 0; m < 8; m++) {
+                            if (deadNeighbours[m] !== undefined) {
+                                key = deadNeighbours[m][0] + ',' + deadNeighbours[m][1]; // Create hashtable key
+
+                                if (allDeadNeighbours[key] === undefined) {
+                                    allDeadNeighbours[key] = 1;
+                                } else {
+                                    allDeadNeighbours[key]++;
+                                }
+                            }
+                        }
+
+                        if (!(neighbours === 0 || neighbours === 1 || neighbours > 3)) {
+                            this.addCell(x, y, newState);
+                            alive++;
+                            this.redrawList.push([x, y, 2]); // Keep alive
+                        } else {
+                            this.redrawList.push([x, y, 0]); // Kill cell
+                        }
+                    }
+                }
+
+                // Process dead neighbours
+                for (key in allDeadNeighbours) {
+                    if (allDeadNeighbours[key] === 3) { // Add new Cell
+                        key = key.split(',');
+                        t1 = parseInt(key[0], 10);
+                        t2 = parseInt(key[1], 10);
+
+                        this.addCell(t1, t2, newState);
+                        alive++;
+                        this.redrawList.push([t1, t2, 1]);
+                    }
+                }
+
+                this.actualState = newState;
+
+                return alive;
+            },
+
+
+            topPointer: 1,
+            middlePointer: 1,
+            bottomPointer: 1,
 
             /**
              *
@@ -1194,10 +1224,6 @@
     GOL.helpers.registerEvent(window, 'load', function () {
         GOL.init();
     }, false);
-
-// Initialization code
-    document.addEventListener("DOMContentLoaded", function () {
-        GOL.init(); // Initialize Game of Life
 
 }());
 
