@@ -165,6 +165,36 @@
             }
         },
 
+        function countLiveNeighbors(x, y) {
+  const rowStart = y * GOL.columns;
+  const rowEnd = rowStart + GOL.columns;
+  let count = 0;
+
+  for (let i = rowStart; i < rowEnd; i++) {
+    const cell = GOL.actualState[i];
+    if (cell) {
+      const cellIndex = cell.indexOf(x);
+      if (cellIndex !== -1) {
+        // Remove the cell from the count
+        cell.splice(cellIndex, 1);
+        continue;
+      }
+    }
+
+    // Check the 8 neighboring cells
+    const left = x > 0 ? GOL.actualState[i][cellIndex - 1] : null;
+    const right = x < GOL.columns - 1 ? GOL.actualState[i][cellIndex + 1] : null;
+    const top = y > 0 ? GOL.actualState[i - 1] : null;
+    const bottom = y < GOL.rows - 1 ? GOL.actualState[i + 1] : null;
+
+    if (left && left[cellIndex - 1]) count++;
+    if (right && right[cellIndex + 1]) count++;
+    if (top && top[cellIndex - GOL.columns]) count++;
+    if (bottom && bottom[cellIndex + GOL.columns]) count++;
+  }
+
+  return count;
+}
 
         /**
          * Load config from URL
@@ -839,18 +869,28 @@
              }
              }
              */
-            nextGeneration: function () {
-                var x, y, i, j, m, n, key, t1, t2, alive = 0, neighbours, deadNeighbours, allDeadNeighbours = {},
-                    newState = [];
-                this.redrawList = [];
+           function nextGeneration() {
+  const newState = [];
 
-                for (i = 0; i < this.actualState.length; i++) {
-                    this.topPointer = 1;
-                    this.bottomPointer = 1;
+  for (let i = 0; i < GOL.rows; i++) {
+    const row = [];
+    for (let j = 0; j < GOL.columns; j++) {
+      const liveNeighbors = countLiveNeighbors(j, i);
+      if (GOL.actualState[i][j]) {
+        if (liveNeighbors === 2 || liveNeighbors === 3) {
+          row.push(j);
+        }
+      } else {
+        if (liveNeighbors === 3) {
+          row.push(j);
+        }
+      }
+    }
+    newState.push(row);
+  }
 
-                    for (j = 1; j < this.actualState[i].length; j++) {
-                        x = this.actualState[i][j];
-                        y = this.actualState[i][0];
+  GOL.actualState = newState;
+}
 
                         // Possible dead neighbours
                         deadNeighbours = [[x - 1, y - 1, 1], [x, y - 1, 1], [x + 1, y - 1, 1], [x - 1, y, 1], [x + 1, y, 1], [x - 1, y + 1, 1], [x, y + 1, 1], [x + 1, y + 1, 1]];
