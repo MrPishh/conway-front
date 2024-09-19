@@ -845,71 +845,34 @@
          */
         listLife: {
 
-            actualState: [],
-            redrawList: [],
+    actualState: [],
+    redrawList: [],
 
+    init: function () {
+        this.actualState = [];
+    },
 
-            /**
-             *
-             */
-            init: function () {
-                this.actualState = [];
-            },
+    someFunction: function () {
+        // Process dead neighbours
+        for (var key in allDeadNeighbours) {
+            if (allDeadNeighbours.hasOwnProperty(key) && allDeadNeighbours[key] === 3) {
+                var splitKey = key.split(',');  // Use a temporary variable
+                t1 = parseInt(splitKey[0], 10); // Parse the key values safely
+                t2 = parseInt(splitKey[1], 10);
 
-
-            /**
-             *
-             NOTE: The following code is slower than the used one.
-
-             (...)
-
-             if (allDeadNeighbours[key] === undefined) {
-             allDeadNeighbours[key] = {
-             x: deadNeighbours[m][0],
-             y: deadNeighbours[m][1],
-             i: 1
-             };
-             } else {
-             allDeadNeighbours[key].i++;
-             }
-
-             (...)
-
-             // Process dead neighbours
-             for (key in allDeadNeighbours) {
-
-             if (allDeadNeighbours[key].i === 3) { // Add new Cell
-
-             this.addCell(allDeadNeighbours[key].x, allDeadNeighbours[key].y, newState);
-             alive++;
-             this.redrawList.push([allDeadNeighbours[key].x, allDeadNeighbours[key].y, 1]);
-             }
-             }
-             */
-
-                // Process dead neighbours
-                for (var key in allDeadNeighbours) {
-                    if (allDeadNeighbours.hasOwnProperty(key) && allDeadNeighbours[key] === 3) { // Add new Cell
-                    var splitKey = key.split(',');  // Use a temporary variable
-                    t1 = parseInt(splitKey[0], 10); // Parse the key values safely
-                    t2 = parseInt(splitKey[1], 10);
-
-                    this.addCell(t1, t2, newState);
-                    alive++;
-                    this.redrawList.push([t1, t2, 1]);
-                }
+                this.addCell(t1, t2, newState);
+                alive++;
+                this.redrawList.push([t1, t2, 1]);
             }
+        }
+        this.actualState = newState;
+        return alive;
+    },
 
-
-                this.actualState = newState;
-
-                return alive;
-            },
-
-
-            topPointer: 1,
-            middlePointer: 1,
-            bottomPointer: 1,
+    topPointer: 1,
+    middlePointer: 1,
+    bottomPointer: 1
+}
 
             /**
              *
