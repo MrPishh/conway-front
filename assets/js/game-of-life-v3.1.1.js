@@ -165,22 +165,6 @@
             }
         },
 
-        function countLiveNeighbors(x, y) {
-  const rowStart = y * GOL.columns;
-  const rowEnd = rowStart + GOL.columns;
-  let count = 0;
-
-  for (let i = rowStart; i < rowEnd; i++) {
-    const cell = GOL.actualState[i];
-    if (cell) {
-      const cellIndex = cell.indexOf(x);
-      if (cellIndex !== -1) {
-        // Remove the cell from the count
-        cell.splice(cellIndex, 1);
-        continue;
-      }
-    }
-
     // Check the 8 neighboring cells
     const left = x > 0 ? GOL.actualState[i][cellIndex - 1] : null;
     const right = x < GOL.columns - 1 ? GOL.actualState[i][cellIndex + 1] : null;
