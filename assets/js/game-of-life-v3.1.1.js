@@ -886,49 +886,6 @@
              }
              }
              */
-        
-    nextGeneration: function () {
-    
-                var x, y, i, j, m, n, key, t1, t2, alive = 0, neighbours, deadNeighbours, allDeadNeighbours = {},
-                    newState = [];
-                this.redrawList = [];
-
-                for (i = 0; i < this.actualState.length; i++) {
-                    this.topPointer = 1;
-                    this.bottomPointer = 1;
-
-                    for (j = 1; j < this.actualState[i].length; j++) {
-                        x = this.actualState[i][j];
-                        y = this.actualState[i][0];
-
-                        // Possible dead neighbours
-                        deadNeighbours = [[x - 1, y - 1, 1], [x, y - 1, 1], [x + 1, y - 1, 1], [x - 1, y, 1], [x + 1, y, 1], [x - 1, y + 1, 1], [x, y + 1, 1], [x + 1, y + 1, 1]];
-
-                        // Get number of live neighbours and remove alive neighbours from deadNeighbours
-                        neighbours = this.getNeighboursFromAlive(x, y, i, deadNeighbours);
-
-                        // Join dead neighbours to check list
-                        for (m = 0; m < 8; m++) {
-                            if (deadNeighbours[m] !== undefined) {
-                                key = deadNeighbours[m][0] + ',' + deadNeighbours[m][1]; // Create hashtable key
-
-                                if (allDeadNeighbours[key] === undefined) {
-                                    allDeadNeighbours[key] = 1;
-                                } else {
-                                    allDeadNeighbours[key]++;
-                                }
-                            }
-                        }
-
-                        if (!(neighbours === 0 || neighbours === 1 || neighbours > 3)) {
-                            this.addCell(x, y, newState);
-                            alive++;
-                            this.redrawList.push([x, y, 2]); // Keep alive
-                        } else {
-                            this.redrawList.push([x, y, 0]); // Kill cell
-                        }
-                    }
-                }
 
                 // Process dead neighbours
                 for (key in allDeadNeighbours) {
