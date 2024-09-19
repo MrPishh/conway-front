@@ -869,28 +869,18 @@
              }
              }
              */
-           function nextGeneration() {
-  const newState = [];
+           nextGeneration: function () {
+                var x, y, i, j, m, n, key, t1, t2, alive = 0, neighbours, deadNeighbours, allDeadNeighbours = {},
+                    newState = [];
+                this.redrawList = [];
 
-  for (let i = 0; i < GOL.rows; i++) {
-    const row = [];
-    for (let j = 0; j < GOL.columns; j++) {
-      const liveNeighbors = countLiveNeighbors(j, i);
-      if (GOL.actualState[i][j]) {
-        if (liveNeighbors === 2 || liveNeighbors === 3) {
-          row.push(j);
-        }
-      } else {
-        if (liveNeighbors === 3) {
-          row.push(j);
-        }
-      }
-    }
-    newState.push(row);
-  }
+                for (i = 0; i < this.actualState.length; i++) {
+                    this.topPointer = 1;
+                    this.bottomPointer = 1;
 
-  GOL.actualState = newState;
-}
+                    for (j = 1; j < this.actualState[i].length; j++) {
+                        x = this.actualState[i][j];
+                        y = this.actualState[i][0];
 
                         // Possible dead neighbours
                         deadNeighbours = [[x - 1, y - 1, 1], [x, y - 1, 1], [x + 1, y - 1, 1], [x - 1, y, 1], [x + 1, y, 1], [x - 1, y + 1, 1], [x, y + 1, 1], [x + 1, y + 1, 1]];
