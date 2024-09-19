@@ -763,7 +763,7 @@
   }
 
   return count;
-}
+},
 
             /**
              * drawCell
